@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>FAST Player</title>
+    <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+            text-align: center;
+            background-color: #F3F3F3;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #673AB7;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5E35B1;
+        }
+        #player-container {
+            display: none;
+            margin-top: 20px;
+        }
+        #jwplayerDiv {
+            width: 80%;
+            height: 60vh;
+            max-width: 100%;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="form-container" class="container">
+        <h2>FAST TV Player</h2>
+        <form id="btv-form">
+            <label>العنوان (Title)</label>
+            <input type="text" id="title" placeholder="أدخل عنوان الفيديو">
+            
+            <label>الرابط (URL)</label>
+            <input type="url" id="url" placeholder="https://example.com/video.mp4" required>
+
+            <label>User Agent</label>
+            <input type="text" id="userAgent" placeholder="أدخل User Agent">
+
+            <label>Referer</label>
+            <input type="text" id="referer" placeholder="أدخل Referer">
+
+            <label>Origin</label>
+            <input type="text" id="origin" placeholder="أدخل Origin">
+
+            <label>DRM Key ID</label>
+            <input type="text" id="drmKeyId" placeholder="أدخل مفتاح DRM ID">
+
+            <label>DRM Key</label>
+            <input type="text" id="drmKey" placeholder="أدخل مفتاح DRM">
+
+            <button type="submit">تشغيل الفيديو</button>
+        </form>
+    </div>
+
+    <div id="player-container">
+        <h2>مشغل الفيديو</h2>
+        <div id="jwplayerDiv"></div>
+        <button onclick="restartForm()">رجوع</button>
+    </div>
+
+    <script>
+        document.getElementById('btv-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const videoUrl = document.getElementById('url').value;
+            const drmKeyId = document.getElementById('drmKeyId').value;
+            const drmKey = document.getElementById('drmKey').value;
+
+            if (!videoUrl) {
+                alert("يرجى إدخال رابط الفيديو!");
+                return;
+            }
+
+            document.getElementById('form-container').style.display = 'none';
+            document.getElementById('player-container').style.display = 'block';
+
+            jwplayer("jwplayerDiv").setup({
+                file: videoUrl,
+                autostart: true,
+                width: "100%",
+                height: "100%",
+                type: "dash",
+                drm: drmKeyId && drmKey ? {
+                    clearkey: {
+                        keyId: drmKeyId,
+                        key: drmKey
+                    }
+                } : undefined
+            });
+        });
+
+        function restartForm() {
+            document.getElementById('player-container').style.display = 'none';
+            document.getElementById('form-container').style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
