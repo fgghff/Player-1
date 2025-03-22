@@ -2,66 +2,274 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشغل القناة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TOD</title>
     <style>
+        :root {
+            --primary-color: #22b14c;
+            --secondary-color: #1a8a3a;
+            --dark-bg: #1a1a1a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            background: #1a1a1a;
+            background: var(--dark-bg);
             color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            direction: rtl;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .channel-section {
+            position: relative;
+            margin: 1rem 0;
+        }
+
+        .channel-row {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 1rem;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .channel-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .channel-card {
+            flex: 0 0 auto;
+            width: 140px;
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .channel-card:hover {
+            transform: translateY(-5px);
+            background: #333;
+        }
+
+        .channel-card a {
+            text-decoration: none;
+            color: white;
+            display: block;
+        }
+
+        .channel-logo {
+            width: 100%;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+        }
+
+        .channel-name {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .scroll-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            font-size: 2.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            z-index: 1000;
+            transition: 0.3s;
+            display: flex;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .scroll-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .scroll-left {
+            left: 10px;
+        }
+
+        .scroll-right {
+            right: 10px;
+        }
+
+        footer {
+            background: #252525;
+            padding: 1.5rem;
+            margin-top: auto;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 500px;
+            margin-top: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         iframe {
-            width: 90%;
-            height: 80vh;
+            width: 100%;
+            height: 100%;
             border: none;
-            border-radius: 10px;
-        }
-
-        .back-btn {
-            margin: 20px;
-            padding: 10px 20px;
-            background: #22b14c;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 5px;
-            text-decoration: none;
         }
     </style>
 </head>
 <body>
 
-    <h1 id="channelName">مشغل القناة</h1>
-    <iframe id="playerFrame" allowfullscreen></iframe>
-    <button class="back-btn" onclick="goBack()">رجوع إلى القائمة</button>
+    <header class="header">
+        <h1>TOD</h1>
+    </header>
+
+    <main>
+        <div class="channel-section">
+            <button class="scroll-btn scroll-left" onclick="scrollRow('row1', -300)">‹</button>
+            <div class="channel-row" id="row1"></div>
+            <button class="scroll-btn scroll-right" onclick="scrollRow('row1', 300)">›</button>
+        </div>
+
+        <div class="channel-section">
+            <button class="scroll-btn scroll-left" onclick="scrollRow('row2', -300)">‹</button>
+            <div class="channel-row" id="row2"></div>
+            <button class="scroll-btn scroll-right" onclick="scrollRow('row2', 300)">›</button>
+        </div>
+
+        <div class="channel-section">
+            <button class="scroll-btn scroll-left" onclick="scrollRow('row3', -300)">‹</button>
+            <div class="channel-row" id="row3"></div>
+            <button class="scroll-btn scroll-right" onclick="scrollRow('row3', 300)">›</button>
+        </div>
+
+        <!-- إضافة iframe لعرض المحتوى -->
+        <div class="iframe-container">
+            <iframe id="channel-iframe" src="" frameborder="0"></iframe>
+        </div>
+    </main>
+
+    <footer>
+        <p>تم التطوير بواسطة FAST TV LIVE | <a href="tg://resolve?domain=FASTTVLIFE1">تابع قناة Telegram</a></p>
+    </footer>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const channelURL = urlParams.get('url');
-        const channelName = urlParams.get('name');
+        const channels = [
+            { name: "beIN SPORTS 1", img: "https://j.top4top.io/p_3362zdhsx0.png", link: "https://fgghff.github.io/bein-sport-1/" },
+            { name: "beIN SPORTS 2", img: "https://j.top4top.io/p_3362adsia0.png", link: "https://fgghff.github.io/bein-sport-2-/" },
+            { name: "beIN SPORTS 3", img: "https://f.top4top.io/p_3362oh9mk0.jpg", link: "https://fgghff.github.io/bein-sport-3/" },
+            { name: "beIN SPORTS 4", img: "https://c.top4top.io/p_3362y1une0.jpg", link: "https://fgghff.github.io/bein-sport-4/" },
+            { name: "beIN SPORTS 5", img: "https://d.top4top.io/p_33628z9021.jpg", link: "https://fgghff.github.io/bein-sport-5-/" },
+            { name: "beIN SPORTS 6", img: "https://i.top4top.io/p_3362pluta0.jpg", link: "https://fgghff.github.io/bein-sport-6/" },
+            { name: "beIN SPORTS 7", img: "https://a.top4top.io/p_3362moewf0.jpg", link: "https://fdxddzss.github.io/Roor/" },
+            { name: "beIN SPORTS 8", img: "https://b.top4top.io/p_336218ty91.jpg", link: "https://fgghff.github.io/bein-sport-8/" },
+            { name: "beIN SPORTS 9", img: "https://c.top4top.io/p_3362m8dxn2.jpg", link: "https://fgghff.github.io/bein-sport-9/" },
+            { name: "beIN SPORT HD", img: "https://d.top4top.io/p_3362stbqz3.jpg", link: "https://fdxddzss.github.io/FAST-TV-LIFE-11/" },
+            { name: "Premier League", img: "https://a.top4top.io/p_3362b1k9h0.png", link: "https://fdxddzss.github.io/Gg/" },
+            { name: "beIN SPORTS News", img: "https://k.top4top.io/p_3362wii3i1.png", link: "https://fgghff.github.io/bein-sport-news-/" },
+            { name: "beIN SPORTS XTRA 1", img: "https://e.top4top.io/p_3362s2ab14.jpg", link: "https://fdxddzss.github.io/FAST-TV-LIFE-11/" },
+            { name: "beIN SPORTS XTRA 2", img: "https://i.top4top.io/p_3362geigl0.jpg", link: "https://fgghff.github.io/bein-sport-Xtra-2/" },
+            { name: "beIN SPORTS XTRA 3", img: "https://f.top4top.io/p_3362wjacn5.jpg", link: "https://fgghff.github.io/bein-sport-Xtra-3-/" },
+            { name: "beIN SPORTS 1 English", img: "https://g.top4top.io/p_3362k51pc6.jpg", link: "https://fgghff.github.io/bein-sport-1-EN/" },
+            { name: "beIN SPORTS 2 English", img: "https://i.top4top.io/p_33621vonx8.jpg", link: "https://fdxddzss.github.io/FAST-TV-LIFE-11/" },
+            { name: "beIN SPORTS 1 French", img: "https://h.top4top.io/p_3362qphtu7.jpg", link: "https://fdxddzss.github.io/FAST-TV-LIFE-11/" },
+            { name: "beIN SPORTS 2 French", img: "https://j.top4top.io/p_3362iove39.jpg", link: "https://fdxddzss.github.io/FAST-TV-LIFE-11/" },
+            { name: "beIN SPORTS 4K", img: "https://l.top4top.io/p_3362h45bb2.png", link: "https://fdxddzss.github.io/FAST-TV-LIFE-11/" },
+            { name: "beIN Movies 1 Premiere", img: "https://j.top4top.io/p_3362hny6u1.jpg", link: "https://fgghff.github.io/bein-movies-1/" },
+            { name: "beIN Movies 2 Action", img: "https://k.top4top.io/p_3362aiu9k2.jpg", link: "https://fgghff.github.io/bein-movies-2/" },
+            { name: "beIN Movies 3 Drama", img: "https://l.top4top.io/p_3362xjy793.jpg", link: "https://fgghff.github.io/bein-movies-3/" },
+            { name: "beIN Movies 4 Family", img: "https://a.top4top.io/p_33627ewjf4.jpg", link: "https://fgghff.github.io/bein-movies-4/" },
+            { name: "beIN Series 1", img: "https://b.top4top.io/p_3362qubtq5.jpg", link: "https://fgghff.github.io/bein-series-1/" },
+            { name: "beIN Series 2", img: "https://c.top4top.io/p_3362n4vke6.jpg", link: "https://hudaquran.netlify.app/" },
+            { name: "bein dream", img: "https://d.top4top.io/p_3362fmfvo7.jpg", link: "https://fgghff.github.io/bein-dream-/" }
+        ];
 
-        if (channelURL) {
-            document.getElementById('playerFrame').src = channelURL;
-        } else {
-            document.getElementById('playerFrame').outerHTML = "<p>⚠ حدث خطأ! لم يتم العثور على رابط القناة.</p>";
+        function scrollRow(rowId, amount) {
+            document.getElementById(rowId).scrollBy({ left: amount, behavior: 'smooth' });
         }
 
-        if (channelName) {
-            document.getElementById('channelName').textContent = channelName;
+        function loadChannels() {
+            ['row1', 'row2', 'row3'].forEach((row, index) => {
+                channels.slice(index * 9, (index + 1) * 9).forEach(channel => {
+                    const card = document.createElement('div');
+                    card.className = 'channel-card';
+                    card.innerHTML = `<a href="#" onclick="openChannel('${channel.link}')"><img src="${channel.img}" class="channel-logo"><p class="channel-name">${channel.name}</p></a>`;
+                    // منع نسخ الرابط عند الضغط مطولاً
+                    card.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        window.location.href = 'https://t.me/FASTTVLIFE1';
+                    });
+                    document.getElementById(row).appendChild(card);
+                });
+            });
         }
 
-        function goBack() {
-            window.history.back();
+        // فتح القناة داخل iframe
+        function openChannel(url) {
+            document.getElementById('channel-iframe').src = url;
+            copyToClipboard(url); // نسخ الرابط عند النقر
         }
+
+        // نسخ الرابط إلى الحافظة
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('تم نسخ الرابط: ' + text);
+            });
+        }
+
+        // منع نسخ الموقع
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+                e.preventDefault();
+                window.location.href = 'https://t.me/FASTTVLIFE1';
+            }
+        });
+
+        // عند فتح أدوات المطورين
+        setInterval(() => {
+            if (window.outerWidth - window.innerWidth > 100 || window.outerHeight - window.innerHeight > 100) {
+                window.location.href = 'https://t.me/FASTTVLIFE1';
+            }
+        }, 1000);
+
+        loadChannels();
     </script>
 
 </body>
