@@ -2,217 +2,61 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TOD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشغل القناة</title>
     <style>
-        :root {
-            --primary-color: #22b14c;
-            --secondary-color: #1a8a3a;
-            --dark-bg: #1a1a1a;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            background: var(--dark-bg);
+            background: #1a1a1a;
             color: white;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            direction: rtl;
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            text-align: center;
             display: flex;
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            padding: 1.2rem;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        iframe {
+            width: 90%;
+            height: 80vh;
+            border: none;
+            border-radius: 10px;
         }
 
-        .header h1 {
-            font-size: 1.8rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .channel-section {
-            position: relative;
-            margin: 1rem 0;
-        }
-
-        .channel-row {
-            display: flex;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding: 1rem;
-            gap: 1rem;
-            position: relative;
-        }
-
-        .channel-row::-webkit-scrollbar {
-            display: none;
-        }
-
-        .channel-card {
-            flex: 0 0 auto;
-            width: 140px;
-            background: #2a2a2a;
-            border-radius: 12px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .channel-card:hover {
-            transform: translateY(-5px);
-            background: #333;
-        }
-
-        .channel-card a {
-            text-decoration: none;
-            color: white;
-            display: block;
-        }
-
-        .channel-logo {
-            width: 100%;
-            height: 90px;
-            object-fit: contain;
-            margin-bottom: 0.5rem;
-        }
-
-        .channel-name {
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.9);
-        }
-
-        .scroll-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.7);
+        .back-btn {
+            margin: 20px;
+            padding: 10px 20px;
+            background: #22b14c;
             border: none;
             color: white;
-            font-size: 2.5rem;
-            padding: 1rem;
+            font-size: 18px;
             cursor: pointer;
-            z-index: 1000;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-        }
-
-        .scroll-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        .scroll-left {
-            left: 10px;
-        }
-
-        .scroll-right {
-            right: 10px;
-        }
-
-        footer {
-            background: #252525;
-            padding: 1.5rem;
-            margin-top: auto;
-            text-align: center;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        footer a {
-            color: var(--primary-color);
+            border-radius: 5px;
             text-decoration: none;
         }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <h1>TOD</h1>
-    </header>
-
-    <main>
-        <div class="channel-section">
-            <button class="scroll-btn scroll-left" onclick="scrollRow('row1', -300)">‹</button>
-            <div class="channel-row" id="row1"></div>
-            <button class="scroll-btn scroll-right" onclick="scrollRow('row1', 300)">›</button>
-        </div>
-    </main>
-
-    <footer>
-        <p>تم التطوير بواسطة FAST TV LIVE | <a href="tg://resolve?domain=FASTTVLIFE1">تابع قناة Telegram</a></p>
-    </footer>
+    <h1 id="channelName">مشغل القناة</h1>
+    <iframe id="playerFrame" allowfullscreen></iframe>
+    <a href="index.html" class="back-btn">رجوع إلى القائمة</a>
 
     <script>
-        function scrollRow(rowId, amount) {
-            document.getElementById(rowId).scrollBy({ left: amount, behavior: 'smooth' });
+        const urlParams = new URLSearchParams(window.location.search);
+        const channelURL = urlParams.get('url');
+        const channelName = urlParams.get('name');
+
+        if (channelURL) {
+            document.getElementById('playerFrame').src = channelURL;
         }
 
-        // منع تحديد النصوص
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-        });
-
-        // منع النقر بزر الفأرة الأيمن
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            alert('نسخ الروابط غير مسموح!');
-        });
-
-        // تعطيل اختصارات النسخ والقص
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && ['KeyC', 'KeyX', 'KeyS', 'KeyU'].includes(e.code)) {
-                e.preventDefault();
-                alert('نسخ المحتوى غير مسموح!');
-            }
-            if ((e.ctrlKey && e.shiftKey && e.code === 'KeyI') || e.code === 'F12') {
-                e.preventDefault();
-                alert('أدوات المطور معطلة!');
-            }
-        });
-
-        // تعطيل سحب الرابط
-        document.querySelectorAll('.channel-card a').forEach(function(link) {
-            link.addEventListener('mousedown', function(event) {
-                event.preventDefault();
-            });
-            link.addEventListener('dragstart', function(event) {
-                event.preventDefault();
-            });
-        });
-
-        // تحميل قائمة القنوات
-        const channels = [
-            { name: "beIN SPORTS 1", img: "https://j.top4top.io/p_3362zdhsx0.png", link: "https://fgghff.github.io/bein-sport-1/" },
-            { name: "beIN SPORTS 2", img: "https://j.top4top.io/p_3362adsia0.png", link: "https://fgghff.github.io/bein-sport-2-/" }
-        ];
-
-        function loadChannels() {
-            const row = document.getElementById('row1');
-            channels.forEach(channel => {
-                row.innerHTML += `<div class="channel-card"><a href="${channel.link}"><img src="${channel.img}" class="channel-logo"><p class="channel-name">${channel.name}</p></a></div>`;
-            });
+        if (channelName) {
+            document.getElementById('channelName').textContent = channelName;
         }
-
-        loadChannels();
     </script>
-    
-    <script src='https://cdn.jsdelivr.net/npm/disable-devtool'></script>
 
 </body>
 </html>
