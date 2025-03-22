@@ -42,7 +42,7 @@
 
     <h1 id="channelName">مشغل القناة</h1>
     <iframe id="playerFrame" allowfullscreen></iframe>
-    <a href="index.html" class="back-btn">رجوع إلى القائمة</a>
+    <button class="back-btn" onclick="goBack()">رجوع إلى القائمة</button>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -51,10 +51,16 @@
 
         if (channelURL) {
             document.getElementById('playerFrame').src = channelURL;
+        } else {
+            document.getElementById('playerFrame').outerHTML = "<p>⚠ حدث خطأ! لم يتم العثور على رابط القناة.</p>";
         }
 
         if (channelName) {
             document.getElementById('channelName').textContent = channelName;
+        }
+
+        function goBack() {
+            window.history.back();
         }
     </script>
 
