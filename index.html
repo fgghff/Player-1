@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="ar">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <title>Studiva - الحياة الدراسية</title>
@@ -24,11 +25,12 @@
       display: flex;
       align-items: center;
       margin-bottom: 5px;
+      flex-wrap: wrap;
     }
     .hour-label {
       width: 150px;
     }
-    .hour-input {
+    .multi-select {
       flex: 1;
       margin: 0 10px;
     }
@@ -50,10 +52,16 @@
 </head>
 <body>
   <h1>Studiva - الحياة الدراسية</h1>
-  <div id="days-container"></div>  <script>
+  <div id="days-container"></div>
+
+  <script>
     const container = document.getElementById('days-container');
     const startDate = new Date();
     const endDate = new Date('2025-08-01');
+
+    const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال', 'تركيز'];
+    const neutralWords = ['نوم', 'لم أفعل شيئًا مفيدًا'];
+    const allOptions = [...usefulWords, ...neutralWords];
 
     function formatHour(hour) {
       const period = hour < 12 ? 'صباحًا' : 'مساءً';
@@ -72,7 +80,7 @@
       dateHeader.textContent = date.toLocaleDateString('ar-EG');
       dayDiv.appendChild(dateHeader);
 
-      const inputs = [];
+      const selects = [];
 
       for (let i = 0; i < 24; i++) {
         const hourDiv = document.createElement('div');
@@ -82,21 +90,35 @@
         label.className = 'hour-label';
         label.textContent = `الساعة ${formatHour(i)}`;
 
-        const input = document.createElement('input');
-        input.className = 'hour-input';
-        input.placeholder = 'ماذا فعلت؟';
-        input.value = savedData[i] || '';
+        const select = document.createElement('select');
+        select.className = 'multi-select';
+        select.multiple = true;
+        allOptions.forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt;
+          option.textContent = opt;
+          select.appendChild(option);
+        });
+
+        if (savedData[i]) {
+          savedData[i].forEach(val => {
+            for (let option of select.options) {
+              if (option.value === val) option.selected = true;
+            }
+          });
+        }
 
         const button = document.createElement('button');
         button.textContent = 'حفظ';
         button.onclick = () => {
-          savedData[i] = input.value;
+          const values = Array.from(select.selectedOptions).map(opt => opt.value);
+          savedData[i] = values.slice(0, 3); // حفظ حتى 3 قيم فقط
           localStorage.setItem(dayKey, JSON.stringify(savedData));
         };
 
-        inputs.push(input);
+        selects.push(select);
         hourDiv.appendChild(label);
-        hourDiv.appendChild(input);
+        hourDiv.appendChild(select);
         hourDiv.appendChild(button);
         dayDiv.appendChild(hourDiv);
       }
@@ -108,9 +130,12 @@
       const calcBtn = document.createElement('button');
       calcBtn.textContent = 'احسب نسبة الإنجاز';
       calcBtn.onclick = () => {
-        const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال', 'تركيز'];
-        const count = inputs.filter(input => usefulWords.some(w => input.value.includes(w))).length;
-        const percent = Math.round((count / 24) * 100);
+        let usefulCount = 0;
+        selects.forEach(select => {
+          const values = Array.from(select.selectedOptions).map(opt => opt.value);
+          if (values.some(val => usefulWords.includes(val))) usefulCount++;
+        });
+        const percent = Math.round((usefulCount / 24) * 100);
         result.textContent = `نسبة الإنجاز: ${percent}%`;
       };
       dayDiv.appendChild(calcBtn);
@@ -123,5 +148,6 @@
       createDayBlock(new Date(current));
       current.setDate(current.getDate() + 1);
     }
-  </script></body>
+  </script>
+</body>
 </html>
