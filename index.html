@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!DOCTYPE html><html lang="ar">
 <head>
   <meta charset="UTF-8">
   <title>Studiva - الحياة الدراسية</title>
@@ -39,6 +38,9 @@
       font-weight: bold;
       color: #333;
     }
+    .summary.high { color: green; }
+    .summary.medium { color: orange; }
+    .summary.low { color: red; }
     button {
       padding: 5px 10px;
       background-color: #2e8b57;
@@ -47,21 +49,40 @@
       border-radius: 5px;
       cursor: pointer;
       margin-top: 5px;
+      margin-left: 5px;
+    }
+    .filter-buttons {
+      margin: 10px 0;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
     }
   </style>
 </head>
 <body>
   <h1>Studiva - الحياة الدراسية</h1>
+  <div class="filter-buttons">
+    <button onclick="showPreviousDay()">مشاهدة اليوم السابق</button>
+    <button onclick="showStats(3)">آخر 3 أيام</button>
+    <button onclick="showStats(7)">آخر أسبوع</button>
+    <button onclick="showStats(30)">آخر شهر</button>
+    <button onclick="exportData()">حفظ نسخة احتياطية</button>
+    <button onclick="importData()">استيراد نسخة احتياطية</button>
+  </div>
   <div id="days-container"></div>
-
-  <script>
+  <div id="stats-result" class="summary"></div>
+  <textarea id="backup" placeholder="هنا تُعرض النسخة الاحتياطية أو الصقها هنا للاستيراد"></textarea>  <script>
     const container = document.getElementById('days-container');
-    const startDate = new Date();
-    const endDate = new Date('2025-08-01');
-
+    const statsResult = document.getElementById('stats-result');
+    const backupArea = document.getElementById('backup');
     const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال', 'تركيز'];
     const neutralWords = ['نوم', 'لم أفعل شيئًا مفيدًا'];
     const allOptions = [...usefulWords, ...neutralWords];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let currentDay = new Date(today);
 
     function formatHour(hour) {
       const period = hour < 12 ? 'صباحًا' : 'مساءً';
@@ -72,6 +93,9 @@
     function createDayBlock(date) {
       const dayKey = date.toISOString().split('T')[0];
       const savedData = JSON.parse(localStorage.getItem(dayKey) || '{}');
+
+      container.innerHTML = ''; // clear before display
+      statsResult.textContent = '';
 
       const dayDiv = document.createElement('div');
       dayDiv.className = 'day';
@@ -112,7 +136,7 @@
         button.textContent = 'حفظ';
         button.onclick = () => {
           const values = Array.from(select.selectedOptions).map(opt => opt.value);
-          savedData[i] = values.slice(0, 3); // حفظ حتى 3 قيم فقط
+          savedData[i] = values.slice(0, 3);
           localStorage.setItem(dayKey, JSON.stringify(savedData));
         };
 
@@ -131,23 +155,94 @@
       calcBtn.textContent = 'احسب نسبة الإنجاز';
       calcBtn.onclick = () => {
         let usefulCount = 0;
+        let sleepCount = 0;
+
         selects.forEach(select => {
           const values = Array.from(select.selectedOptions).map(opt => opt.value);
-          if (values.some(val => usefulWords.includes(val))) usefulCount++;
+          if (values.includes('نوم')) sleepCount++;
+          else if (values.some(val => usefulWords.includes(val))) usefulCount++;
         });
-        const percent = Math.round((usefulCount / 24) * 100);
-        result.textContent = `نسبة الإنجاز: ${percent}%`;
-      };
-      dayDiv.appendChild(calcBtn);
 
+        if (sleepCount > 0 && sleepCount <= 7) usefulCount += sleepCount;
+
+        const percent = Math.round((usefulCount / 24) * 100);
+        result.textContent = `نسبة الإنجاز: ${percent}% (بينها نوم: ${sleepCount} ساعات)`;
+
+        result.classList.remove('low', 'medium', 'high');
+        if (percent >= 75) result.classList.add('high');
+        else if (percent >= 40) result.classList.add('medium');
+        else result.classList.add('low');
+      };
+
+      dayDiv.appendChild(calcBtn);
       container.appendChild(dayDiv);
     }
 
-    let current = new Date(startDate);
-    while (current <= endDate) {
-      createDayBlock(new Date(current));
-      current.setDate(current.getDate() + 1);
+    function showPreviousDay() {
+      currentDay.setDate(currentDay.getDate() - 1);
+      createDayBlock(new Date(currentDay));
     }
-  </script>
-</body>
+
+    function showStats(daysBack) {
+      let total = 0;
+      let useful = 0;
+
+      for (let i = 0; i < daysBack; i++) {
+        const tempDate = new Date(today);
+        tempDate.setDate(tempDate.getDate() - i);
+        const key = tempDate.toISOString().split('T')[0];
+        const data = JSON.parse(localStorage.getItem(key) || '{}');
+
+        for (let hour in data) {
+          const values = data[hour];
+          if (values.includes('نوم')) {
+            if (countSleep(data) <= 7) useful++;
+          } else if (values.some(val => usefulWords.includes(val))) {
+            useful++;
+          }
+          total++;
+        }
+      }
+
+      const percent = total > 0 ? Math.round((useful / total) * 100) : 0;
+      statsResult.textContent = `إنجاز آخر ${daysBack} أيام: ${percent}%`;
+      statsResult.classList.remove('low', 'medium', 'high');
+      if (percent >= 75) statsResult.classList.add('high');
+      else if (percent >= 40) statsResult.classList.add('medium');
+      else statsResult.classList.add('low');
+    }
+
+    function countSleep(data) {
+      let count = 0;
+      for (let hour in data) {
+        if (data[hour].includes('نوم')) count++;
+      }
+      return count;
+    }
+
+    function exportData() {
+      const allData = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(key)) {
+          allData[key] = JSON.parse(localStorage.getItem(key));
+        }
+      }
+      backupArea.value = JSON.stringify(allData, null, 2);
+    }
+
+    function importData() {
+      try {
+        const data = JSON.parse(backupArea.value);
+        for (let key in data) {
+          localStorage.setItem(key, JSON.stringify(data[key]));
+        }
+        alert('تم الاستيراد بنجاح. أعد تحميل الصفحة.');
+      } catch {
+        alert('صيغة النسخة غير صحيحة!');
+      }
+    }
+
+    createDayBlock(currentDay);
+  </script></body>
 </html>
