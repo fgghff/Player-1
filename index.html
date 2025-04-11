@@ -58,12 +58,15 @@
       width: 100%;
       height: 150px;
     }
+    select[multiple] {
+      height: 80px;
+    }
   </style>
 </head>
 <body>
   <h1>Studiva - الحياة الدراسية</h1>
   <div class="filter-buttons">
-    <button onclick="showPreviousDay()">مشاهدة اليوم السابق</button>
+    <button onclick="showDayPicker()">الأيام</button>
     <button onclick="showStats(3)">آخر 3 أيام</button>
     <button onclick="showStats(7)">آخر أسبوع</button>
     <button onclick="showStats(30)">آخر شهر</button>
@@ -76,7 +79,7 @@
     const container = document.getElementById('days-container');
     const statsResult = document.getElementById('stats-result');
     const backupArea = document.getElementById('backup');
-    const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال', 'تركيز'];
+    const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال', 'تركيز', 'إفطار', 'غداء', 'عشاء'];
     const neutralWords = ['نوم', 'لم أفعل شيئًا مفيدًا'];
     const allOptions = [...usefulWords, ...neutralWords];
 
@@ -178,9 +181,27 @@
       container.appendChild(dayDiv);
     }
 
-    function showPreviousDay() {
-      currentDay.setDate(currentDay.getDate() - 1);
-      createDayBlock(new Date(currentDay));
+    function showDayPicker() {
+      container.innerHTML = '';
+      const pickerDiv = document.createElement('div');
+      pickerDiv.className = 'day';
+
+      const today = new Date();
+      const endDate = new Date(today.getFullYear(), 7, 31); // نهاية أغسطس
+
+      while (today <= endDate) {
+        const key = today.toISOString().split('T')[0];
+        const btn = document.createElement('button');
+        btn.textContent = today.toLocaleDateString('ar-EG');
+        btn.onclick = () => {
+          currentDay = new Date(today);
+          createDayBlock(currentDay);
+        };
+        pickerDiv.appendChild(btn);
+        today.setDate(today.getDate() + 1);
+      }
+
+      container.appendChild(pickerDiv);
     }
 
     function showStats(daysBack) {
@@ -188,7 +209,7 @@
       let useful = 0;
 
       for (let i = 0; i < daysBack; i++) {
-        const tempDate = new Date(today);
+        const tempDate = new Date();
         tempDate.setDate(tempDate.getDate() - i);
         const key = tempDate.toISOString().split('T')[0];
         const data = JSON.parse(localStorage.getItem(key) || '{}');
