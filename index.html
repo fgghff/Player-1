@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="ar">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <title>Studiva - الحياة الدراسية</title>
@@ -61,25 +62,35 @@
     select[multiple] {
       height: 80px;
     }
+    #date-picker {
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>Studiva - الحياة الدراسية</h1>
   <div class="filter-buttons">
-    <button onclick="showDayPicker()">الأيام</button>
-    <button onclick="showStats(3)">انجاز آخر 3 أيام </button>
-    <button onclick="showStats(7)"> انجاز آخر أسبوع</button>
-    <button onclick="showStats(30)">انجاز آخر شهر</button>
+    <input type="date" id="date-picker" onchange="selectDate()" />
+    <button onclick="showStats(3)">إنجاز آخر 3 أيام</button>
+    <button onclick="showStats(7)">إنجاز آخر أسبوع</button>
+    <button onclick="showStats(30)">إنجاز آخر شهر</button>
     <button onclick="exportData()">حفظ نسخة احتياطية</button>
     <button onclick="importData()">استيراد نسخة احتياطية</button>
+    <button onclick="stopReminder()">إيقاف التذكير</button>
   </div>
   <div id="days-container"></div>
   <div id="stats-result" class="summary"></div>
-  <textarea id="backup" placeholder="هنا تُعرض النسخة الاحتياطية أو الصقها هنا للاستيراد"></textarea>  <script>
+  <textarea id="backup" placeholder="هنا تُعرض النسخة الاحتياطية أو الصقها هنا للاستيراد"></textarea>
+
+  <audio id="reminder-sound" src="https://www.soundjay.com/buttons/sounds/button-29.mp3" preload="auto"></audio>
+
+  <script>
     const container = document.getElementById('days-container');
     const statsResult = document.getElementById('stats-result');
     const backupArea = document.getElementById('backup');
-    const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال', 'تركيز', 'إفطار', 'غداء', 'عشاء'];
+    const reminderSound = document.getElementById('reminder-sound');
+
+    const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال','ترفيه','تصفح الهاتف','تركيز', 'إفطار', 'غداء', 'عشاء'];
     const neutralWords = ['نوم', 'لم أفعل شيئًا مفيدًا'];
     const allOptions = [...usefulWords, ...neutralWords];
 
@@ -87,17 +98,29 @@
     today.setHours(0, 0, 0, 0);
     let currentDay = new Date(today);
 
+    let reminderInterval;
+
     function formatHour(hour) {
       const period = hour < 12 ? 'صباحًا' : 'مساءً';
       const formatted = hour % 12 === 0 ? 12 : hour % 12;
       return `${formatted} ${period}`;
     }
 
+    function selectDate() {
+      const input = document.getElementById('date-picker');
+      const selected = new Date(input.value);
+      if (!isNaN(selected.getTime())) {
+        selected.setHours(0, 0, 0, 0);
+        currentDay = selected;
+        createDayBlock(currentDay);
+      }
+    }
+
     function createDayBlock(date) {
       const dayKey = date.toISOString().split('T')[0];
       const savedData = JSON.parse(localStorage.getItem(dayKey) || '{}');
 
-      container.innerHTML = ''; // clear before display
+      container.innerHTML = '';
       statsResult.textContent = '';
 
       const dayDiv = document.createElement('div');
@@ -181,29 +204,6 @@
       container.appendChild(dayDiv);
     }
 
-    function showDayPicker() {
-      container.innerHTML = '';
-      const pickerDiv = document.createElement('div');
-      pickerDiv.className = 'day';
-
-      const today = new Date();
-      const endDate = new Date(today.getFullYear(), 7, 31); // نهاية أغسطس
-
-      while (today <= endDate) {
-        const key = today.toISOString().split('T')[0];
-        const btn = document.createElement('button');
-        btn.textContent = today.toLocaleDateString('ar-EG');
-        btn.onclick = () => {
-          currentDay = new Date(today);
-          createDayBlock(currentDay);
-        };
-        pickerDiv.appendChild(btn);
-        today.setDate(today.getDate() + 1);
-      }
-
-      container.appendChild(pickerDiv);
-    }
-
     function showStats(daysBack) {
       let total = 0;
       let useful = 0;
@@ -264,6 +264,35 @@
       }
     }
 
+    function showReminderNotification() {
+      if (Notification.permission === 'granted') {
+        new Notification('تذكير Studiva', {
+          body: 'هل سجّلت يومك الدراسي؟',
+          icon: 'https://cdn-icons-png.flaticon.com/512/3564/3564370.png'
+        });
+        reminderSound.play();
+      }
+    }
+
+    function requestNotificationPermission() {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            reminderInterval = setInterval(showReminderNotification, 3600000); // كل ساعة
+          }
+        });
+      }
+    }
+
+    function stopReminder() {
+      if (reminderInterval) {
+        clearInterval(reminderInterval);
+        alert('تم إيقاف التذكيرات.');
+      }
+    }
+
+    requestNotificationPermission();
     createDayBlock(currentDay);
-  </script></body>
+  </script>
+</body>
 </html>
