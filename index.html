@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>متتبع النجاح اليومي</title>
+  <title>Studiva - الحياة الدراسية</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -44,11 +44,12 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>متتبع النجاح اليومي</h1>
+  <h1>Studiva - الحياة الدراسية</h1>
   <div id="days-container"></div>  <script>
     const container = document.getElementById('days-container');
     const startDate = new Date();
@@ -107,8 +108,8 @@
       const calcBtn = document.createElement('button');
       calcBtn.textContent = 'احسب نسبة الإنجاز';
       calcBtn.onclick = () => {
-        const goodWords = ['دراسة', 'صلاة'];
-        const count = inputs.filter(input => goodWords.some(w => input.value.includes(w))).length;
+        const usefulWords = ['دراسة', 'صلاة', 'تعلم', 'رياضة', 'قراءة', 'مراجعة', 'قران', 'فهم', 'واجب', 'مذاكرة', 'دورة', 'بحث', 'مشروع', 'مقال', 'تركيز'];
+        const count = inputs.filter(input => usefulWords.some(w => input.value.includes(w))).length;
         const percent = Math.round((count / 24) * 100);
         result.textContent = `نسبة الإنجاز: ${percent}%`;
       };
