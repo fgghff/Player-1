@@ -183,16 +183,24 @@
         let usefulCount = 0;
         let sleepCount = 0;
 
-        selects.forEach(select => {
+        selects.forEach((select, hourIndex) => {
           const values = Array.from(select.selectedOptions).map(opt => opt.value);
-          if (values.includes('نوم')) sleepCount++;
-          else if (values.some(val => usefulWords.includes(val))) usefulCount++;
+          // تحقق من نوم الصباح فقط
+          if (hourIndex >= 0 && hourIndex <= 9) {
+            if (values.includes('نوم')) {
+              sleepCount++;
+            }
+          } else if (values.some(val => usefulWords.includes(val))) {
+            usefulCount++;
+          }
         });
 
-        if (sleepCount > 0 && sleepCount <= 7) usefulCount += sleepCount;
+        // حساب النوم المفيد في حالة إذا كان النوم لا يتجاوز 7 ساعات
+        const effectiveSleep = Math.min(sleepCount, 7);
+        usefulCount += effectiveSleep;
 
         const percent = Math.round((usefulCount / 24) * 100);
-        result.textContent = `نسبة الإنجاز: ${percent}% (بينها نوم: ${sleepCount} ساعات)`;
+        result.textContent = `نسبة الإنجاز: ${percent}% (بينها نوم مفيد: ${effectiveSleep} ساعات)`;
 
         result.classList.remove('low', 'medium', 'high');
         if (percent >= 75) result.classList.add('high');
@@ -215,9 +223,12 @@
         const data = JSON.parse(localStorage.getItem(key) || '{}');
 
         for (let hour in data) {
+          const hourNum = parseInt(hour);
           const values = data[hour];
-          if (values.includes('نوم')) {
-            if (countSleep(data) <= 7) useful++;
+          if (hourNum >= 0 && hourNum <= 9) {
+            if (values.includes('نوم')) {
+              useful++;
+            }
           } else if (values.some(val => usefulWords.includes(val))) {
             useful++;
           }
@@ -231,14 +242,6 @@
       if (percent >= 75) statsResult.classList.add('high');
       else if (percent >= 40) statsResult.classList.add('medium');
       else statsResult.classList.add('low');
-    }
-
-    function countSleep(data) {
-      let count = 0;
-      for (let hour in data) {
-        if (data[hour].includes('نوم')) count++;
-      }
-      return count;
     }
 
     function exportData() {
